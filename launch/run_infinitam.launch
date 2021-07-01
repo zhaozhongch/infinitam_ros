@@ -1,0 +1,8 @@
+<launch>
+    <param name="name" value="ekfslam_bayesopt"/>
+    <param name="calib_address" type="str" value="/home/zhaozhong/dataset/tum/rgbd_dataset_freiburg1_desk/calib_infinitam.txt" />
+    <param name="rgb_image_topic" type="str" value="/camera/rgb/image_color" />
+    <param name="depth_image_topic" type="str" value="/camera/depth/image" />
+    <node name="infinitam" pkg = "infinitam" type = "InfiniTAM" output="screen">
+    </node>
+</launch>
