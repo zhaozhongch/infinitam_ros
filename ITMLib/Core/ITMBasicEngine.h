@@ -49,6 +49,10 @@ namespace ITMLib
 		/// Pointer to the current camera pose and additional tracking information
 		ITMTrackingState *trackingState;
 
+		ORUtils::SE3Pose frame_pose_;
+		double pose_timestamp_ = 0;
+		bool use_external_tracker_ = false;
+
 	public:
 		ITMView* GetView(void) { return view; }
 		ITMTrackingState* GetTrackingState(void) { return trackingState; }
@@ -69,6 +73,11 @@ namespace ITMLib
 		Vector2i GetImageSize(void) const;
 
 		void GetImage(ITMUChar4Image *out, GetImageType getImageType, ORUtils::SE3Pose *pose = NULL, ITMIntrinsics *intrinsics = NULL);
+
+		//Set Camera Pose when use external tracker
+		void SetCameraPose(ORUtils::SE3Pose pose, double timestamp);
+		void SetUseExternalTrakcerFlag(bool use_external_tracker);
+		bool UseExternalTrakcer();
 
 		/// switch for turning tracking on/off
 		void turnOnTracking();

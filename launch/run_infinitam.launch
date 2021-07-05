@@ -1,8 +1,13 @@
 <launch>
     <param name="name" value="ekfslam_bayesopt"/>
+    <param name="use_external_pose_estimation" type="bool" value="True" />
+    <param name="external_pose_topic" type="str" value="/orbslam3/odom" />
+    <param name="depth_scale" type="double" value="5000.0" />
     <param name="calib_address" type="str" value="/home/zhaozhong/dataset/tum/rgbd_dataset_freiburg1_desk/calib_infinitam.txt" />
-    <param name="rgb_image_topic" type="str" value="/camera/rgb/image_color" />
-    <param name="depth_image_topic" type="str" value="/camera/depth/image" />
+    <!-- <param name="rgb_image_topic" type="str" value="/camera/rgb/image_color" /> -->
+    <param name="rgb_image_topic" type="str" value="/camera/rgb/image_raw" />
+    <!-- <param name="depth_image_topic" type="str" value="/camera/depth/image" /> -->
+    <param name="depth_image_topic" type="str" value="/camera/depth_registered/image_raw" />
     <node name="infinitam" pkg = "infinitam" type = "InfiniTAM" output="screen">
     </node>
 </launch>

@@ -232,6 +232,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateInto
 	}
 	else
 	{
+		//default integrate using this function
 		integrateIntoScene_device<TVoxel, false> << <gridSize, cudaBlockSize >> >(localVBA, hashTable, visibleEntryIDs,
 			rgb, rgbImgSize, depth, confidence, depthImgSize, M_d, M_rgb, projParams_d, projParams_rgb, voxelSize, mu, maxW);
 		ORcudaKernelCheck;

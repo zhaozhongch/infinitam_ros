@@ -2,11 +2,16 @@ This is simply an Infinitam with ROS Interface. There are some other repos onlin
 https://github.com/ethz-asl/infinitam  
 However, I cannot make it work. 
 Or  
-https://github.com/victorprad/InfiniTAM/issues/140
+https://github.com/victorprad/InfiniTAM/issues/140  
 It says Infinitam v3.5 can work wth ROS but I didn't see it has anywhere trying to use ROS...  
 Finally, I re-write the ROS interface based on the general Infinitam v3  
-https://github.com/victorprad/InfiniTAM
-I recommnd you try to download the general Infinitam v3 repo and try to compile it first, If you can compile the general Infinitam v3 and you have ROS (test on melodic) then you should be able to compile this.
+https://github.com/victorprad/InfiniTAM  
+I recommnd you try to download the general Infinitam v3 repo and try to compile it first, If you can compile the general Infinitam v3 and you have ROS (test on melodic) then you should be able to compile this. I add the following three features to the Infinitam v3  
+```
+1: Accpet receiving ROS image topic  
+2: Accpet External pose estimation
+3: RGB reconstruction
+```
 # Compile
 ```
 mkdir -p catkin_ws/src
@@ -16,13 +21,18 @@ cd ..
 catkin_make
 ```
 # Use
-1: Modify the launch file. Go to the `catkin_ws/src/infinitam_ros/launch`, open `run_infinitam.launch`
+### Internal tracker
+1: If you just want to use the internal tracker of the infinitam, modify the launch file. Go to the `catkin_ws/src/infinitam_ros/launch`, open `run_infinitam.launch`
 ```
 <launch>
     <param name="name" value="ekfslam_bayesopt"/>
+    <param name="use_external_pose_estimation" type="bool" value="False" />
+    <!-- this line doesnt matter if you use internal trakcer -->
+    <param name="external_pose_topic" type="str" value="/orbslam3/odom" />
+    <param name="depth_scale" type="double" value="5000.0" />
     <param name="calib_address" type="str" value="/home/zhaozhong/dataset/tum/rgbd_dataset_freiburg1_desk/calib_infinitam.txt" />
-    <param name="rgb_image_topic" type="str" value="/camera/rgb/image_color" />
-    <param name="depth_image_topic" type="str" value="/camera/depth/image" />
+    <param name="rgb_image_topic" type="str" value="/camera/rgb/image_raw" />
+    <param name="depth_image_topic" type="str" value="/camera/depth_registered/image_raw" />
     <node name="infinitam" pkg = "infinitam" type = "InfiniTAM" output="screen">
     </node>
 </launch>
@@ -38,9 +48,30 @@ Then you should see the UI like the general Infinitam v3. Say I have a `rgbd_dat
 ```
 rosbag play rgbd_dataset_freiburg1_desk.bag
 ```
+Press `c` in the UI to see colorful reconstruction  
 Press `n` or `b` to see if you want to process the image one by one or continuously.  
-![](UI_Infinitam.png)
+![](rgb.png)
 
+### External Tracker
+1: If you want to use external tracker, then you should create a publisher that publishes the camera pose with the same topic as the launch file `external_pose_topic`.  I provide an example combining the RGBD-ORBSLAM3 and the Infinitam.  
+Download the ORBSLAM3 from its official repo https://github.com/UZ-SLAMLab/ORB_SLAM3
+2: Use the file in the `External_Tracker_Examples/ros_rgbd.cc` to replace the file in the ORBSLAM3 `Use this file to replace the ORB_SLAM3/Examples/ROS/ORB_SLAM3/src/ros_rgbd.cc` (I simply add a publisher to publish the ORBSLAM3 pose estimation)
+3: Compile ORBSLAM3 and fillowing its instruction to run the ros rgbd node. For eaxmple, if you want to run TUM RGBD dataset (https://vision.in.tum.de/data/datasets/rgbd-dataset)  
+```
+rosrun ORB_SLAM3 RGBD PATH_TO_VOCABULARY PATH_TO_TUM1.yaml_IN_ORBSLAM3
+```
+4: In infinitam launch file, change `use_external_pose_estimation` to `True`  
+```
+<param name="use_external_pose_estimation" type="bool" value="True" />
+```
+5: Run infinitam  
+```
+roslaunch infinitam run_infinitam.launch
+``` 
+6: Run TUM dataset rosbag, say `rgbd_dataset_freiburg1_desk.bag`
+```
+rosbag play PATH_TO_rgbd_dataset_freiburg1_desk.bag /camera/rgb/image_color:=/camera/rgb/image_raw /camera/depth/image:=/camera/depth_registered/image_raw
+```
 
 # InfiniTAM v3
 

@@ -1,0 +1,1 @@
+Use this file to replace the ORB_SLAM3/Examples/ROS/ORB_SLAM3/src/ros_rgbd.cc

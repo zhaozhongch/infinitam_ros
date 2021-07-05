@@ -37,6 +37,13 @@ RosImageSourceEngine::RosImageSourceEngine(ros::NodeHandle& nh,
     depth_image_topic = "/camera/depth/image";
   }
 
+  if(nh.getParam("depth_scale", depth_scale_)){
+    ROS_INFO("Get depth scale %f. This should be the inverse of the first `affine` parameter in the calibration file \n", depth_scale_);
+  }
+  else{
+    ROS_INFO("Use default depth scale 1.0");
+  }
+
   // Get images from ROS topic.
   rgb_sub_ = nh.subscribe(rgb_image_topic, 10,
                                     &RosImageSourceEngine::rgbCallback,
@@ -50,7 +57,6 @@ RosImageSourceEngine::RosImageSourceEngine(ros::NodeHandle& nh,
   image_size_depth_ = calib.intrinsics_d.imgSize;
   image_size_rgb_   = calib.intrinsics_rgb.imgSize;
 
-  //Initialize the Local Mapping thread and launch
   spin_thread_ = new std::thread(&InputSource::RosImageSourceEngine::SpinROS,this);
 
 }
@@ -89,9 +95,8 @@ void RosImageSourceEngine::depthCallback(
   cv_depth_image = cv_bridge::toCvCopy(msg, msg->encoding);
   // If the image has 32FC1. Infinitam needs 16UCI.
   if (msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
-    constexpr double kDepthScalingFactor = 1000.0;
     (cv_depth_image->image)
-        .convertTo(cv_depth_image->image, CV_16UC1, kDepthScalingFactor);
+        .convertTo(cv_depth_image->image, CV_16UC1, depth_scale_);
   }
 
   std::lock_guard<std::mutex> guard(depth_mutex_);
@@ -176,6 +181,8 @@ bool RosImageSourceEngine::ImagePairMatches(){
     }
   }
 
+  timestamp_sec_ = t1;
+
   return true;
 }
 
@@ -187,6 +194,9 @@ bool RosImageSourceEngine::hasMoreImages(void) const{
   return true;
 }
 
+double RosImageSourceEngine::GetImageTimestamp(){
+  return timestamp_sec_;
+}
 
 Vector2i RosImageSourceEngine::getDepthImageSize(void) const {
   return image_size_depth_;
@@ -196,8 +206,8 @@ Vector2i RosImageSourceEngine::getRGBImageSize(void) const {
 }
 
 void RosImageSourceEngine::SpinROS(){
-  ros::Rate r(10);
-  printf("Execute ros spin in another thread........................ \n");
+  ros::Rate r(500);
+  printf("Execute ros spin in another thread........................ image \n");
   while(ros::ok()){
     ros::spinOnce();
     r.sleep();

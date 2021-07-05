@@ -48,6 +48,7 @@ PicoFlexxEngine.cpp
 RealSenseEngine.cpp
 RealSense2Engine.cpp
 RosImageSourceEngine.cpp
+ExternalTrackerEngine.cpp
 )
 
 SET(headers
@@ -64,6 +65,7 @@ PicoFlexxEngine.h
 RealSenseEngine.h
 RealSense2Engine.h
 RosImageSourceEngine.h
+ExternalTrackerEngine.h
 )
 
 #############################

@@ -83,6 +83,11 @@ namespace ITMLib
 		virtual void SaveToFile() { };
 		virtual void LoadFromFile() { };
 
+		//Use when we set the external trakcer
+		virtual void SetUseExternalTrakcerFlag(bool use_external_tracker){};
+		virtual void SetCameraPose(ORUtils::SE3Pose pose, double timestamp) {};
+		virtual bool UseExternalTrakcer(){};
+
 		virtual ~ITMMainEngine() {}
 	};
 }

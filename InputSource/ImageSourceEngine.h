@@ -74,6 +74,13 @@ namespace InputSource {
 		virtual bool ImagePairMatches(){
 			return true;
 		}
+
+		/**
+		 * \brief Get the timestamp of the image
+		*/
+		virtual double GetImageTimestamp(){
+			return -1;
+		}
 	};
 
 	class BaseImageSourceEngine : public ImageSourceEngine

@@ -251,51 +251,60 @@ ITMTrackingState::TrackingResult ITMBasicEngine<TVoxel,TIndex>::ProcessFrame(ITM
 	if (!mainProcessingActive) return ITMTrackingState::TRACKING_FAILED;
 
 	// tracking
+	ITMTrackingState::TrackingResult trackerResult;
 	ORUtils::SE3Pose oldPose(*(trackingState->pose_d));
-	if (trackingActive) trackingController->Track(trackingState, view);
-
-	ITMTrackingState::TrackingResult trackerResult = ITMTrackingState::TRACKING_GOOD;
-	switch (settings->behaviourOnFailure) {
-	case ITMLibSettings::FAILUREMODE_RELOCALISE:
-		trackerResult = trackingState->trackerResult;
-		break;
-	case ITMLibSettings::FAILUREMODE_STOP_INTEGRATION:
-		if (trackingState->trackerResult != ITMTrackingState::TRACKING_FAILED)
-			trackerResult = trackingState->trackerResult;
-		else trackerResult = ITMTrackingState::TRACKING_POOR;
-		break;
-	default:
-		break;
-	}
-
-	//relocalisation
 	int addKeyframeIdx = -1;
-	if (settings->behaviourOnFailure == ITMLibSettings::FAILUREMODE_RELOCALISE)
-	{
-		if (trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount > 0) relocalisationCount--;
 
-		int NN; float distances;
-		view->depth->UpdateHostFromDevice();
+	if(use_external_tracker_){
+		trackerResult = ITMTrackingState::TRACKING_GOOD;
+		trackingState->pose_d->SetM(frame_pose_.GetM());
+	}
+	else{
+		if (trackingActive) trackingController->Track(trackingState, view);
 
-		//find and add keyframe, if necessary
-		bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, trackingState->pose_d, 0, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
-
-		//frame not added and tracking failed -> we need to relocalise
-		if (!hasAddedKeyframe && trackerResult == ITMTrackingState::TRACKING_FAILED)
-		{
-			relocalisationCount = 10;
-
-			// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
-			view->rgb_prev->Clear();
-
-			const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN);
-			trackingState->pose_d->SetFrom(&keyframe.pose);
-
-			denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
-			trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
-			trackingController->Track(trackingState, view);
-
+		//ITMTrackingState::TrackingResult trackerResult = ITMTrackingState::TRACKING_GOOD;
+		trackerResult = ITMTrackingState::TRACKING_GOOD;
+		switch (settings->behaviourOnFailure) {
+		case ITMLibSettings::FAILUREMODE_RELOCALISE:
 			trackerResult = trackingState->trackerResult;
+			break;
+		case ITMLibSettings::FAILUREMODE_STOP_INTEGRATION:
+			if (trackingState->trackerResult != ITMTrackingState::TRACKING_FAILED)
+				trackerResult = trackingState->trackerResult;
+			else trackerResult = ITMTrackingState::TRACKING_POOR;
+			break;
+		default:
+			break;
+		}
+
+		//relocalisation
+		if (settings->behaviourOnFailure == ITMLibSettings::FAILUREMODE_RELOCALISE)
+		{
+			if (trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount > 0) relocalisationCount--;
+
+			int NN; float distances;
+			view->depth->UpdateHostFromDevice();
+
+			//find and add keyframe, if necessary
+			bool hasAddedKeyframe = relocaliser->ProcessFrame(view->depth, trackingState->pose_d, 0, 1, &NN, &distances, trackerResult == ITMTrackingState::TRACKING_GOOD && relocalisationCount == 0);
+
+			//frame not added and tracking failed -> we need to relocalise
+			if (!hasAddedKeyframe && trackerResult == ITMTrackingState::TRACKING_FAILED)
+			{
+				relocalisationCount = 10;
+
+				// Reset previous rgb frame since the rgb image is likely different than the one acquired when setting the keyframe
+				view->rgb_prev->Clear();
+
+				const FernRelocLib::PoseDatabase::PoseInScene & keyframe = relocaliser->RetrievePose(NN);
+				trackingState->pose_d->SetFrom(&keyframe.pose);
+
+				denseMapper->UpdateVisibleList(view, trackingState, scene, renderState_live, true);
+				trackingController->Prepare(trackingState, scene, view, visualisationEngine, renderState_live); 
+				trackingController->Track(trackingState, view);
+
+				trackerResult = trackingState->trackerResult;
+			}
 		}
 	}
 
@@ -345,6 +354,23 @@ template <typename TVoxel, typename TIndex>
 Vector2i ITMBasicEngine<TVoxel,TIndex>::GetImageSize(void) const
 {
 	return renderState_live->raycastImage->noDims;
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::SetCameraPose(ORUtils::SE3Pose pose, double timestamp)
+{
+	frame_pose_ = pose;
+	pose_timestamp_ = timestamp;
+}
+
+template <typename TVoxel, typename TIndex>
+void ITMBasicEngine<TVoxel,TIndex>::SetUseExternalTrakcerFlag(bool use_external_tracker){
+	use_external_tracker_ = use_external_tracker;
+}
+
+template <typename TVoxel, typename TIndex>
+bool ITMBasicEngine<TVoxel,TIndex>::UseExternalTrakcer(){
+	return use_external_tracker_;
 }
 
 template <typename TVoxel, typename TIndex>
