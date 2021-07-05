@@ -54,8 +54,8 @@ Press `n` or `b` to see if you want to process the image one by one or continuou
 
 ### External Tracker
 1: If you want to use external tracker, then you should create a publisher that publishes the camera pose with the same topic as the launch file `external_pose_topic`.  I provide an example combining the RGBD-ORBSLAM3 and the Infinitam.  
-Download the ORBSLAM3 from its official repo https://github.com/UZ-SLAMLab/ORB_SLAM3
-2: Use the file in the `External_Tracker_Examples/ros_rgbd.cc` to replace the file in the ORBSLAM3 `Use this file to replace the ORB_SLAM3/Examples/ROS/ORB_SLAM3/src/ros_rgbd.cc` (I simply add a publisher to publish the ORBSLAM3 pose estimation)
+Download the ORBSLAM3 from its official repo https://github.com/UZ-SLAMLab/ORB_SLAM3  
+2: Use the file in the `External_Tracker_Examples/ros_rgbd.cc` to replace the file in the ORBSLAM3 `Use this file to replace the ORB_SLAM3/Examples/ROS/ORB_SLAM3/src/ros_rgbd.cc` (I simply add a publisher to publish the ORBSLAM3 pose estimation)    
 3: Compile ORBSLAM3 and fillowing its instruction to run the ros rgbd node. For eaxmple, if you want to run TUM RGBD dataset (https://vision.in.tum.de/data/datasets/rgbd-dataset)  
 ```
 rosrun ORB_SLAM3 RGBD PATH_TO_VOCABULARY PATH_TO_TUM1.yaml_IN_ORBSLAM3
