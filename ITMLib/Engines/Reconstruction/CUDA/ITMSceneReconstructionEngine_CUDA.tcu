@@ -191,6 +191,7 @@ void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::AllocateScene
 	scene->index.SetLastFreeExcessListId(tempData->noAllocatedExcessEntries);
 }
 
+//default integrate using this function
 template<class TVoxel>
 void ITMSceneReconstructionEngine_CUDA<TVoxel, ITMVoxelBlockHash>::IntegrateIntoScene(ITMScene<TVoxel, ITMVoxelBlockHash> *scene, const ITMView *view,
 	const ITMTrackingState *trackingState, const ITMRenderState *renderState)
@@ -330,6 +331,8 @@ __global__ void integrateIntoScene_device(TVoxel *voxelArray, const ITMPlainVoxe
 	ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation, TVoxel::hasConfidenceInformation, TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, confidence, depthImgSize, rgb, rgbImgSize);
 }
 
+
+//most of the time using this for integration
 template<class TVoxel, bool stopMaxW>
 __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *hashTable, int *visibleEntryIDs,
 	const Vector4u *rgb, Vector2i rgbImgSize, const float *depth, const float *confidence, Vector2i depthImgSize, Matrix4f M_d, Matrix4f M_rgb, Vector4f projParams_d, 
@@ -360,6 +363,7 @@ __global__ void integrateIntoScene_device(TVoxel *localVBA, const ITMHashEntry *
 	pt_model.z = (float)(globalPos.z + z) * _voxelSize;
 	pt_model.w = 1.0f;
 
+	//normally we dont have confidence information
 	ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation, TVoxel::hasConfidenceInformation, TVoxel>::compute(localVoxelBlock[locId], 
 		pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, depth, confidence, depthImgSize, rgb, rgbImgSize);
 }

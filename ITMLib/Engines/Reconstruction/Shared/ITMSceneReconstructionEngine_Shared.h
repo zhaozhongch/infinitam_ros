@@ -30,19 +30,37 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 	if (eta < -mu) return eta;
 
 	// compute updated SDF value and reliability
-	oldF = TVoxel::valueToFloat(voxel.sdf); oldW = voxel.w_depth;
+	oldF = TVoxel::valueToFloat(voxel.sdf); 
+	oldW = voxel.w_depth;
 
+	
 	newF = MIN(1.0f, eta / mu);
 	newW = 1;
 
 	newF = oldW * oldF + newW * newF;
 	newW = oldW + newW;
 	newF /= newW;
-	newW = MIN(newW, maxW);
+	newW = MIN(newW, maxW);	
 
-	// write back
+	//write back
 	voxel.sdf = TVoxel::floatToValue(newF);
 	voxel.w_depth = newW;
+	
+	// newF = MIN(1.0f, eta / mu);
+	// newW = 1;
+
+	// float th = 0.05; 
+	
+	// if(abs(newF - oldF)<th){
+	// 	newF = oldW * oldF + newW * newF;
+	// 	newW = oldW + newW;
+	// 	newF /= newW;
+	// 	newW = MIN(newW, maxW);
+	// }
+
+	// //write back
+	// voxel.sdf = TVoxel::floatToValue(newF);
+	// voxel.w_depth = newW;
 
 	return eta;
 }
@@ -125,6 +143,8 @@ _CPU_AND_GPU_CODE_ inline void computeUpdatedVoxelColorInfo(DEVICEPTR(TVoxel) &v
 
 template<bool hasColor, bool hasConfidence, class TVoxel> struct ComputeUpdatedVoxelInfo;
 
+//in the template, <false, false, TVoxel> means if we have color information, if we have confidence information
+//normally we dont have confidence information
 template<class TVoxel>
 struct ComputeUpdatedVoxelInfo<false, false, TVoxel> {
 	_CPU_AND_GPU_CODE_ static void compute(DEVICEPTR(TVoxel) & voxel, const THREADPTR(Vector4f) & pt_model,

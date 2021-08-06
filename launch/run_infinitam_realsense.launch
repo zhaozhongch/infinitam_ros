@@ -1,0 +1,12 @@
+<launch>
+    <param name="name" value="ekfslam_bayesopt"/>
+    <param name="use_external_pose_estimation" type="bool" value="False" />
+    <param name="external_pose_topic" type="str" value="/orbslam3/odom" />
+    <!-- <param name="external_pose_topic" type="str" value="/vins_estimator/camera_pose_geo" /> -->
+    <param name="depth_scale" type="double" value="1000.0" />
+    <param name="calib_address" type="str" value="/home/zhaozhong/ros_test/vin_ws/src/VINS-Fusion/config/realsense_d455_3dm_gx5_15/calib_infinitam.txt" />
+    <param name="rgb_image_topic" type="str" value="/gray_image0" />
+    <param name="depth_image_topic" type="str" value="/depth" />
+    <node name="infinitam" pkg = "infinitam" type = "InfiniTAM" output="screen">
+    </node>
+</launch>

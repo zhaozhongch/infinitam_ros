@@ -73,6 +73,11 @@ void RosImageSourceEngine::rgbCallback(
     cv_rgb_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
   else if(msg->encoding == sensor_msgs::image_encodings::BGR8)
     cv_rgb_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  else if(msg->encoding == sensor_msgs::image_encodings::MONO8){
+    //printf("get grayscale image and convert it to the 4 channel image since infinitam only accpet this \n");
+    cv_rgb_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8);
+    cv::cvtColor(cv_rgb_image->image, cv_rgb_image->image, CV_GRAY2RGB);
+  }
   else{
     ROS_FATAL("unsupported rgb image encodings");
     ros::shutdown();

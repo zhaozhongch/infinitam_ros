@@ -30,6 +30,10 @@ namespace ITMLib
 		    in the volume. This is again usually specified in
 		    meters. The resulting width in voxels is @ref mu
 		    divided by @ref voxelSize.
+			if voxel's old depth in the current frame is different than its project depth and smaller than -mu then the voxel sdf wont update 
+			eta = depth_measure - pt_camera.z;
+			see ITMSceneReconstructionEngine_Shared.h
+			if (eta < -mu) return eta;
 		*/
 		float mu;
 
